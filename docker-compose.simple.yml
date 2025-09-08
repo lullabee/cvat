@@ -1,0 +1,97 @@
+services:
+  cvat_db:
+    container_name: cvat_db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_DB: cvat
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - cvat_db:/var/lib/postgresql/data
+    networks:
+      - cvat
+
+  cvat_redis:
+    container_name: cvat_redis
+    image: redis:6-alpine
+    restart: always
+    networks:
+      - cvat
+
+  cvat_server:
+    container_name: cvat_server
+    image: cvat/server:dev
+    restart: always
+    depends_on:
+      - cvat_redis
+      - cvat_db
+      - cvat_opa
+    ports:
+      - "8080:8080"
+    command: init run server
+    environment:
+      DJANGO_MODWSGI_EXTRA_ARGS: ""
+      ALLOWED_HOSTS: '*'
+      CVAT_HOST: localhost
+      CVAT_REDIS_HOST: cvat_redis
+      CVAT_REDIS_INMEM_HOST: cvat_redis
+      CVAT_REDIS_ONDISK_HOST: cvat_redis
+      CVAT_POSTGRES_HOST: cvat_db
+      CVAT_OPA_HOST: "opa"
+      CVAT_OPA_PORT: "8181"
+      CVAT_OPA_ENABLED: "true"
+      CVAT_OPA_URL: "http://opa:8181"
+      CVAT_OPA_POLICY: ""
+      CVAT_OPA_BUNDLE: ""
+      SMOKESCREEN_OPTS: ""
+    volumes:
+      - cvat_data:/home/django/data
+      - cvat_keys:/home/django/keys
+      - cvat_logs:/home/django/logs
+      - cvat_models:/home/django/models
+    networks:
+      - cvat
+
+  cvat_ui:
+    container_name: cvat_ui
+    image: node:18-alpine
+    restart: always
+    depends_on:
+      - cvat_server
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./proxy-server.js:/app/proxy-server.js
+      - ./package.json:/app/package.json
+      - ./cvat_ui_files/html:/usr/share/nginx/html
+    working_dir: /app
+    command: sh -c "npm install && npm start"
+    networks:
+      - cvat
+
+  cvat_opa:
+    container_name: cvat_opa
+    image: python:3.8-alpine
+    restart: always
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./mock-opa.py:/app/mock-opa.py
+    command: python /app/mock-opa.py
+    networks:
+      cvat:
+        aliases:
+          - opa
+
+volumes:
+  cvat_db:
+  cvat_data:
+  cvat_keys:
+  cvat_logs:
+  cvat_models:
+  cvat_ui_data:
+
+networks:
+  cvat:
+    driver: bridge
