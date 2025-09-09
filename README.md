@@ -46,16 +46,6 @@ docker compose -f docker-compose.simple.yml exec cvat_server python manage.py cr
 - **cvat_redis**: Redis cache
 - **cvat_opa**: Mock OPA server for permissions
 
-## 🐛 Issues Fixed
-
-This setup resolves the following common CVAT installation problems:
-
-1. **500 Internal Server Error** on projects endpoint
-2. **415 Unsupported Media Type** on login
-3. **OPA connection errors** (permission system)
-4. **Docker Compose compatibility** issues
-5. **Form-to-JSON conversion** for login requests
-
 ## 🛑 Stop CVAT
 
 ```bash
