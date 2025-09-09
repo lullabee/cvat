@@ -25,16 +25,6 @@ docker compose -f docker-compose.simple.yml up -d
 docker compose -f docker-compose.simple.yml exec cvat_server python manage.py createsuperuser
 ```
 
-## 🛠️ What's Included
-
-This setup includes all the fixes for common CVAT installation issues:
-
-- ✅ **Mock OPA Server** - Resolves permission errors (500 errors on projects endpoint)
-- ✅ **Node.js Proxy** - Handles form-to-JSON conversion for login
-- ✅ **Docker Compose Configuration** - Complete service orchestration
-- ✅ **Environment Variables** - Properly configured for local development
-- ✅ **Static UI Files** - Pre-built CVAT UI included
-
 ## 📁 Repository Structure
 
 ```
